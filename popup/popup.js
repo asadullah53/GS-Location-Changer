@@ -951,6 +951,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     langCountEl.textContent = `${GOOGLE_LANGUAGES.length}`;
   }
 
+  // User Guide Modal Controls
+  const guideModal = document.getElementById('guideModal');
+  const openGuideBtn = document.getElementById('openGuideBtn');
+  const openGuideCardBtn = document.getElementById('openGuideCardBtn');
+  const closeGuideBtn = document.getElementById('closeGuideBtn');
+  const closeGuideFooterBtn = document.getElementById('closeGuideFooterBtn');
+
+  function openGuide() {
+    if (guideModal) {
+      guideModal.classList.remove('hidden');
+    }
+  }
+
+  function closeGuide() {
+    if (guideModal) {
+      guideModal.classList.add('hidden');
+    }
+  }
+
+  if (openGuideBtn) openGuideBtn.addEventListener('click', openGuide);
+  if (openGuideCardBtn) openGuideCardBtn.addEventListener('click', openGuide);
+  if (closeGuideBtn) closeGuideBtn.addEventListener('click', closeGuide);
+  if (closeGuideFooterBtn) closeGuideFooterBtn.addEventListener('click', closeGuide);
+
+  if (guideModal) {
+    guideModal.addEventListener('click', (e) => {
+      if (e.target === guideModal) closeGuide();
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && guideModal && !guideModal.classList.contains('hidden')) {
+      closeGuide();
+    }
+  });
+
   // Initial Boot
   initCityPresets();
   renderStatus();

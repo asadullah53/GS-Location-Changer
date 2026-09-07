@@ -25,6 +25,13 @@
       </div>
 
       <div class="header-toggle">
+        <button id="openGuideBtn" class="icon-btn" title="How to Use & Feature Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </button>
         <label class="switch" title="Toggle Google Location Spoofing">
           <input type="checkbox" id="masterToggle" checked>
           <span class="slider round"></span>
@@ -274,6 +281,14 @@
         <button id="resetDefaultsBtn" class="btn btn-danger-outline btn-sm">
           Reset All Settings to Default
         </button>
+
+        <div class="guide-banner">
+          <div class="guide-banner-info">
+            <span class="guide-banner-title">📖 Need Help? Complete User Guide</span>
+            <span class="guide-banner-desc">Learn how to use every feature, Local SEO tips, and shortcuts in English.</span>
+          </div>
+          <button id="openGuideCardBtn" class="btn btn-emerald btn-sm">Open Guide</button>
+        </div>
       </div>
     </section>
 
@@ -292,6 +307,94 @@
 
     <!-- Toast Feedback Notification -->
     <div id="toast" class="toast hidden">Location updated successfully!</div>
+
+    <!-- User Guide Modal Overlay -->
+    <div id="guideModal" class="guide-modal hidden">
+      <div class="guide-content">
+        <div class="guide-header">
+          <div class="guide-title-row">
+            <span class="guide-icon">📖</span>
+            <div>
+              <h2>GS Location Changer - User Guide</h2>
+              <span class="guide-subtitle">Complete Feature Walkthrough & Tips</span>
+            </div>
+          </div>
+          <button id="closeGuideBtn" class="icon-btn close-btn" title="Close Guide">✕</button>
+        </div>
+
+        <div class="guide-body">
+          <!-- Section 1: Quick 3-Step Start -->
+          <div class="guide-section highlight-box">
+            <h3>⚡ Quick 3-Step Start</h3>
+            <ol class="guide-list numbered">
+              <li><strong>Select Location & Language:</strong> In the <em>Country & Lang</em> tab, click the search box to pick your target country (e.g. <code>United States</code>) and language (e.g. <code>English</code>), then click <strong>Apply Location & Language</strong>.</li>
+              <li><strong>Search on Google:</strong> Type your search directly in Chrome's URL bar, or type in the <strong>Quick Search bar</strong> at the bottom of this popup and press Enter.</li>
+              <li><strong>See Localized Results:</strong> Google automatically loads localized search results for that exact country and language!</li>
+            </ol>
+          </div>
+
+          <!-- Section 2: Country & Language Switching -->
+          <div class="guide-section">
+            <h3>🌐 1. Country & Language Switching</h3>
+            <p>Google uses two primary URL parameters to control your results:</p>
+            <ul class="guide-list">
+              <li><strong><code>gl</code> (Country / Geolocation):</strong> Directs Google to use that specific country's search index (e.g. <code>gl=us</code> for USA, <code>gl=gb</code> for UK, <code>gl=pk</code> for Pakistan, <code>gl=de</code> for Germany).</li>
+              <li><strong><code>hl</code> (Host Language):</strong> Sets the language of Google's search interface, buttons, menus, and spell-check suggestions.</li>
+              <li><strong><code>lr</code> (Language Restrict):</strong> When enabled in Settings, strictly limits results to web pages written in that specific language.</li>
+            </ul>
+            <div class="tip-box">💡 <em>Tip: Click the search input box to browse all 166 countries or 79 languages with full arrow key navigation!</em></div>
+          </div>
+
+          <!-- Section 3: Local SEO & GPS Pinpoint -->
+          <div class="guide-section">
+            <h3>📍 2. Local SEO & Precise GPS Pinpoint</h3>
+            <p>Ideal for local businesses, SEO agencies, and geo-targeted ranking checks:</p>
+            <ul class="guide-list">
+              <li><strong>Preset Local SEO Cities:</strong> Select from global hubs (New York, London, Dubai, Tokyo, etc.) to instantly load exact coordinates and Google canonical names.</li>
+              <li><strong>Latitude & Longitude (-90 to 90 lat, -180 to 180 lng):</strong> Enter precise GPS coordinates. When you search <em>"coffee shop near me"</em> or click Google's <em>"Use precise location"</em>, our extension feeds these exact coordinates to Google's HTML5 Geolocation API.</li>
+              <li><strong>Canonical UULE Generator:</strong> Google's official secret weapon for local search URLs. Type any city or area name (e.g. <code>Austin, Texas, United States</code>) and click <strong>Generate UULE</strong>. This generates a Google Protobuf parameter (<code>w+CAIQICI...</code>) that enforces city-level SERPs.</li>
+              <li><strong>Clear GPS:</strong> Click <strong>Clear GPS</strong> anytime to reset back to general country-level search.</li>
+            </ul>
+          </div>
+
+          <!-- Section 4: 1-Click Favorites -->
+          <div class="guide-section">
+            <h3>⭐ 3. Favorites & Presets</h3>
+            <p>Save and switch between client configurations in a split second:</p>
+            <ul class="guide-list">
+              <li>Configure any location, language, coordinates, and UULE.</li>
+              <li>Click <strong>Save to Favorites</strong>, give it a recognizable name (e.g. <em>"Client A - London Local"</em>), and save.</li>
+              <li>Open the <strong>Favorites</strong> tab and click <strong>Apply</strong> on any saved card to activate it in 1 click!</li>
+              <li><strong>Export / Import:</strong> Use the Export button to save your favorites as a JSON backup or import them on other machines safely.</li>
+            </ul>
+          </div>
+
+          <!-- Section 5: Settings & Power Tools -->
+          <div class="guide-section">
+            <h3>⚙️ 4. Settings & Power Tools</h3>
+            <ul class="guide-list">
+              <li><strong>Auto-Apply:</strong> Automatically synchronizes your chosen location whenever you search from Chrome's top address bar.</li>
+              <li><strong>Non-Personalized Search (<code>pws=0</code>):</strong> Strips search history and cookie bias to reveal true, neutral, organic ranking positions.</li>
+              <li><strong>Master Switch (Top Right):</strong> Turn all location spoofing ON or OFF with a single click. When OFF, Google uses your standard real location.</li>
+            </ul>
+          </div>
+
+          <!-- Section 6: Toolbar Icon Badge -->
+          <div class="guide-section">
+            <h3>🏷️ 5. Toolbar Icon Badge</h3>
+            <p>The extension icon on your browser toolbar shows your active status:</p>
+            <ul class="guide-list">
+              <li><strong style="color: #10b981;">Green Badge (e.g., US, GB, PK, DE):</strong> Spoofing is active for that country.</li>
+              <li><strong style="color: #94a3b8;">Grey Badge (OFF):</strong> Spoofing is disabled.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="guide-footer">
+          <button id="closeGuideFooterBtn" class="btn btn-primary">Got it, Let's Search!</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Scripts -->
