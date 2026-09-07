@@ -63,7 +63,6 @@ const GOOGLE_LANGUAGES = [
   { code: "et", name: "Estonian", nativeName: "Eesti" },
   { code: "gl", name: "Galician", nativeName: "Galego" },
   { code: "ka", name: "Georgian", nativeName: "ქართული" },
-  { code: "gu", name: "Gujarati", nativeName: "ગુજરાતી" },
   { code: "is", name: "Icelandic", nativeName: "Íslenska" },
   { code: "ga", name: "Irish", nativeName: "Gaeilge" },
   { code: "kk", name: "Kazakh", nativeName: "Қазақ тілі" },
@@ -85,6 +84,24 @@ const GOOGLE_LANGUAGES = [
   { code: "zu", name: "Zulu", nativeName: "isiZulu" }
 ];
 
+/**
+ * Derives Google Search 'lr' (language restrict) parameter correctly.
+ * Maps regional variants to valid Google lr values (e.g. pt-BR -> lang_pt).
+ */
+function getGoogleLrCode(langCode) {
+  if (!langCode) return 'lang_en';
+  const mapping = {
+    'pt-BR': 'lang_pt',
+    'pt-PT': 'lang_pt',
+    'zh-CN': 'lang_zh-CN',
+    'zh-TW': 'lang_zh-TW',
+    'fil': 'lang_tl'
+  };
+  if (mapping[langCode]) return mapping[langCode];
+  const base = langCode.split('-')[0].toLowerCase();
+  return `lang_${base}`;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { GOOGLE_LANGUAGES };
+  module.exports = { GOOGLE_LANGUAGES, getGoogleLrCode };
 }

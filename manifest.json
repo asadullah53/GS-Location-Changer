@@ -1,8 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "GS Location Changer - Google Search Location & Language",
+  "name": "GS Location Changer",
   "version": "1.0.0",
   "description": "Instantly change Google Search location, language, coordinates, and canonical UULE with 1-click favorites.",
+  "author": "GS Location Changer",
+  "minimum_chrome_version": "111",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",

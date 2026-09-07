@@ -55,6 +55,10 @@ body {
   overflow-y: auto;
 }
 
+input, textarea, .code-input, .uule-value, .meta-tag {
+  user-select: text;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;

@@ -1,9 +1,91 @@
 /**
  * GS Location Changer - Background Service Worker (Manifest V3)
- * Manages extension state, dynamic badge updates, URL synchronization, and tab communication.
+ * Handles toolbar badges, search URL synchronization, ccTLD routing, and tab messaging.
  */
 
-// Default configuration on installation
+// Import shared datasets and utilities
+importScripts('../data/countries.js', '../data/languages.js', '../utils/uule-generator.js');
+
+// Build strict allowed Google domain lookup set (SEC-02)
+const GOOGLE_DOMAINS_SET = new Set(['google.com']);
+if (typeof GOOGLE_COUNTRIES !== 'undefined' && Array.isArray(GOOGLE_COUNTRIES)) {
+  GOOGLE_COUNTRIES.forEach(c => {
+    if (c.domain) GOOGLE_DOMAINS_SET.add(c.domain.toLowerCase());
+  });
+}
+
+// Starter favorites definitions (single source of truth: canonicalName -> encodeUULE)
+function createInitialFavorites() {
+  const starter = [
+    {
+      id: "fav-1",
+      name: "USA - New York (English)",
+      countryCode: "us",
+      countryName: "United States",
+      languageCode: "en",
+      languageName: "English",
+      latitude: 40.7128,
+      longitude: -74.0060,
+      canonicalName: "New York, New York, United States",
+      badge: "🇺🇸"
+    },
+    {
+      id: "fav-2",
+      name: "UK - London (English)",
+      countryCode: "gb",
+      countryName: "United Kingdom",
+      languageCode: "en",
+      languageName: "English",
+      latitude: 51.5074,
+      longitude: -0.1278,
+      canonicalName: "London, England, United Kingdom",
+      badge: "🇬🇧"
+    },
+    {
+      id: "fav-3",
+      name: "Germany - Berlin (German)",
+      countryCode: "de",
+      countryName: "Germany",
+      languageCode: "de",
+      languageName: "German",
+      latitude: 52.5200,
+      longitude: 13.4050,
+      canonicalName: "Berlin, Berlin, Germany",
+      badge: "🇩🇪"
+    },
+    {
+      id: "fav-4",
+      name: "UAE - Dubai (Arabic)",
+      countryCode: "ae",
+      countryName: "United Arab Emirates",
+      languageCode: "ar",
+      languageName: "Arabic",
+      latitude: 25.2048,
+      longitude: 55.2708,
+      canonicalName: "Dubai, Dubai, United Arab Emirates",
+      badge: "🇦🇪"
+    },
+    {
+      id: "fav-5",
+      name: "Pakistan - Lahore (English)",
+      countryCode: "pk",
+      countryName: "Pakistan",
+      languageCode: "en",
+      languageName: "English",
+      latitude: 31.5204,
+      longitude: 74.3587,
+      canonicalName: "Lahore, Punjab, Pakistan",
+      badge: "🇵🇰"
+    }
+  ];
+
+  return starter.map(f => ({
+    ...f,
+    uule: encodeUULE(f.canonicalName) // UUL-01: Dynamically generated valid protobuf
+  }));
+}
+
+// Default configuration
 const DEFAULT_CONFIG = {
   isEnabled: true,
   countryCode: "us",
@@ -13,93 +95,37 @@ const DEFAULT_CONFIG = {
   latitude: 40.7128,
   longitude: -74.0060,
   canonicalName: "New York, New York, United States",
-  uule: "w+CAIQICIlTmV3IFlvcmssIE5ldyBZb3JrLCBVbml0ZWQgU3RhdGVz",
+  uule: encodeUULE("New York, New York, United States"),
   autoApply: true,
   nonPersonalized: true, // pws=0
-  languageRestrict: false, // lr=lang_xx
+  languageRestrict: false,
   favorites: []
 };
 
-// Initial setup
+// Initial setup on install/update (SW-09: preserve user deletions across updates)
 chrome.runtime.onInstalled.addListener(async (details) => {
   const current = await chrome.storage.local.get(null);
   
-  // Set defaults if empty
-  const initial = Object.assign({}, DEFAULT_CONFIG, current);
-  
-  // Preload starter favorites if none exist
-  if (!initial.favorites || initial.favorites.length === 0) {
-    initial.favorites = [
-      {
-        id: "fav-1",
-        name: "USA - New York (English)",
-        countryCode: "us",
-        countryName: "United States",
-        languageCode: "en",
-        languageName: "English",
-        latitude: 40.7128,
-        longitude: -74.0060,
-        canonicalName: "New York, New York, United States",
-        uule: "w+CAIQICIlTmV3IFlvcmssIE5ldyBZb3JrLCBVbml0ZWQgU3RhdGVz",
-        badge: "🇺🇸"
-      },
-      {
-        id: "fav-2",
-        name: "UK - London (English)",
-        countryCode: "gb",
-        countryName: "United Kingdom",
-        languageCode: "en",
-        languageName: "English",
-        latitude: 51.5074,
-        longitude: -0.1278,
-        canonicalName: "London, England, United Kingdom",
-        uule: "w+CAIQICIeTG9uZG9uLEVuZ2xhbmQsVW5pdGVkIEtpbmdkb20=",
-        badge: "🇬🇧"
-      },
-      {
-        id: "fav-3",
-        name: "Germany - Berlin (German)",
-        countryCode: "de",
-        countryName: "Germany",
-        languageCode: "de",
-        languageName: "German",
-        latitude: 52.5200,
-        longitude: 13.4050,
-        canonicalName: "Berlin, Berlin, Germany",
-        uule: "w+CAIQICIXQmVybGluLCBCZXJsaW4sR2VybWFueQ==",
-        badge: "🇩🇪"
-      },
-      {
-        id: "fav-4",
-        name: "UAE - Dubai (Arabic)",
-        countryCode: "ae",
-        countryName: "United Arab Emirates",
-        languageCode: "ar",
-        languageName: "Arabic",
-        latitude: 25.2048,
-        longitude: 55.2708,
-        canonicalName: "Dubai, Dubai, United Arab Emirates",
-        uule: "w+CAIQICIhRHViYWksIER1YmFpLCBVbml0ZWQgQXJhYiBFbWlyYXRlcw==",
-        badge: "🇦🇪"
-      },
-      {
-        id: "fav-5",
-        name: "Pakistan - Lahore (English)",
-        countryCode: "pk",
-        countryName: "Pakistan",
-        languageCode: "en",
-        languageName: "English",
-        latitude: 31.5204,
-        longitude: 74.3587,
-        canonicalName: "Lahore, Punjab, Pakistan",
-        uule: "w+CAIQICIXTGFob3JlLCBQdW5qYWIsIFBha2lzdGFu",
-        badge: "🇵🇰"
-      }
-    ];
+  if (details.reason === 'install' || !current || Object.keys(current).length === 0) {
+    const initial = {
+      ...DEFAULT_CONFIG,
+      ...current,
+      favorites: (current.favorites && current.favorites.length > 0)
+        ? current.favorites
+        : createInitialFavorites()
+    };
+    await chrome.storage.local.set(initial);
+    updateBadge(initial.isEnabled, initial.countryCode);
+  } else {
+    // On update, just refresh badge
+    updateBadge(current.isEnabled !== false, current.countryCode || 'us');
   }
+});
 
-  await chrome.storage.local.set(initial);
-  updateBadge(initial.isEnabled, initial.countryCode);
+// Restore badge on browser startup (SW-04)
+chrome.runtime.onStartup.addListener(async () => {
+  const data = await chrome.storage.local.get(['isEnabled', 'countryCode']);
+  updateBadge(data.isEnabled !== false, data.countryCode || 'us');
 });
 
 // Update toolbar icon badge
@@ -114,32 +140,52 @@ function updateBadge(isEnabled, countryCode) {
   }
 }
 
-// Listen to storage changes to keep badge updated
+// Efficient storage listener (SW-05: only wake up when badge state changes)
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === 'local') {
-    chrome.storage.local.get(['isEnabled', 'countryCode'], (data) => {
-      updateBadge(data.isEnabled, data.countryCode);
-    });
+    if (changes.isEnabled || changes.countryCode) {
+      chrome.storage.local.get(['isEnabled', 'countryCode'], (data) => {
+        updateBadge(data.isEnabled !== false, data.countryCode || 'us');
+      });
+    }
   }
 });
 
-// Helper: Determine if URL is a Google Search query
+// Strict Google Search URL detector (SEC-02)
 function isGoogleSearchUrl(urlString) {
   try {
     const url = new URL(urlString);
-    const isGoogle = url.hostname.includes('google.') || url.hostname.endsWith('google.com');
-    const isSearchPath = url.pathname === '/search' || url.pathname.startsWith('/search');
+    const host = url.hostname.toLowerCase();
+    
+    // Check if hostname matches or ends with any valid Google ccTLD
+    let isGoogleDomain = false;
+    for (const domain of GOOGLE_DOMAINS_SET) {
+      if (host === domain || host.endsWith('.' + domain)) {
+        isGoogleDomain = true;
+        break;
+      }
+    }
+    if (!isGoogleDomain) return false;
+
+    // Strict path matching: only /search, ignore /maps, /flights, etc.
+    const isSearchPath = url.pathname === '/search';
     const hasQuery = url.searchParams.has('q');
-    return isGoogle && (isSearchPath || hasQuery);
+    return isSearchPath && hasQuery;
   } catch {
     return false;
   }
 }
 
+// Prevent redirect loops (SW-01)
+const lastRewrittenUrls = new Map();
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  lastRewrittenUrls.delete(tabId);
+});
+
 // Auto-sync Google Search URLs with user parameters
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  // Only process when URL changes or loads
-  if (!changeInfo.url && !changeInfo.status) return;
+  if (!changeInfo.status || changeInfo.status !== 'loading') return;
   const currentUrl = tab.url;
   if (!currentUrl || !isGoogleSearchUrl(currentUrl)) return;
 
@@ -171,9 +217,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       needsUpdate = true;
     }
 
-    // 3. Language restrict 'lr'
+    // 3. Language restrict 'lr' (SW-06)
     if (settings.languageRestrict && settings.languageCode) {
-      const lrVal = `lang_${settings.languageCode}`;
+      const lrVal = getGoogleLrCode(settings.languageCode);
       if (url.searchParams.get('lr') !== lrVal) {
         url.searchParams.set('lr', lrVal);
         needsUpdate = true;
@@ -186,27 +232,32 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       needsUpdate = true;
     }
 
-    // 5. UULE Local SEO canonical parameter
+    // 5. UULE Local SEO parameter
     if (settings.uule && url.searchParams.get('uule') !== settings.uule) {
       url.searchParams.set('uule', settings.uule);
       needsUpdate = true;
     }
 
-    // Redirect tab if parameters were adjusted
-    if (needsUpdate && changeInfo.status === 'loading') {
-      chrome.tabs.update(tabId, { url: url.toString() });
+    const finalUrl = url.toString();
+    // Guard against infinite loop
+    if (needsUpdate && lastRewrittenUrls.get(tabId) !== finalUrl) {
+      lastRewrittenUrls.set(tabId, finalUrl);
+      chrome.tabs.update(tabId, { url: finalUrl });
     }
   } catch (err) {
-    console.error('[GS Location Changer] Error synchronizing search URL:', err);
+    console.error('[GS Location Changer] Error syncing search URL:', err);
   }
 });
 
 // Handle incoming messages from popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'QUICK_SEARCH') {
-    handleQuickSearch(message.query, message.settings).then(() => {
-      sendResponse({ success: true });
-    });
+    handleQuickSearch(message.query, message.settings)
+      .then(() => sendResponse({ success: true }))
+      .catch((err) => {
+        console.error('[GS Location Changer] Quick search failed:', err);
+        sendResponse({ success: false, error: err.message });
+      });
     return true; // async
   }
 
@@ -217,17 +268,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.action === 'RELOAD_CURRENT_GOOGLE_TAB') {
-    reloadCurrentGoogleTab().then((res) => sendResponse(res));
+    reloadCurrentGoogleTab()
+      .then((res) => sendResponse(res))
+      .catch((err) => sendResponse({ reloaded: false, error: err.message }));
     return true;
   }
 });
 
-// Launch a fresh Google Search with all custom parameters applied
+// Launch a fresh Google Search with ccTLD routing (SW-07, SW-08)
 async function handleQuickSearch(query, settings) {
   const targetCountry = settings.countryCode ? settings.countryCode.toLowerCase() : 'us';
   const targetLang = settings.languageCode || 'en';
 
-  const searchUrl = new URL('https://www.google.com/search');
+  // Find country's native Google domain (e.g. google.co.uk, google.com.pk)
+  let targetDomain = 'google.com';
+  if (typeof GOOGLE_COUNTRIES !== 'undefined') {
+    const found = GOOGLE_COUNTRIES.find(c => c.code.toLowerCase() === targetCountry);
+    if (found && found.domain) {
+      targetDomain = found.domain;
+    }
+  }
+
+  const searchUrl = new URL(`https://www.${targetDomain}/search`);
   searchUrl.searchParams.set('q', query);
   searchUrl.searchParams.set('gl', targetCountry);
   searchUrl.searchParams.set('hl', targetLang);
@@ -237,7 +299,7 @@ async function handleQuickSearch(query, settings) {
   }
 
   if (settings.languageRestrict) {
-    searchUrl.searchParams.set('lr', `lang_${targetLang}`);
+    searchUrl.searchParams.set('lr', getGoogleLrCode(targetLang));
   }
 
   if (settings.uule) {
@@ -247,7 +309,7 @@ async function handleQuickSearch(query, settings) {
   await chrome.tabs.create({ url: searchUrl.toString() });
 }
 
-// Reload or update currently active Google tab with latest parameters
+// Reload or update currently active Google tab with latest parameters (SW-02)
 async function reloadCurrentGoogleTab() {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tabs || tabs.length === 0) return { reloaded: false };
@@ -267,16 +329,26 @@ async function reloadCurrentGoogleTab() {
   ]);
 
   const url = new URL(activeTab.url);
+
   if (settings.isEnabled) {
+    // Apply parameters
     if (settings.countryCode) url.searchParams.set('gl', settings.countryCode.toLowerCase());
     if (settings.languageCode) url.searchParams.set('hl', settings.languageCode);
     if (settings.nonPersonalized) url.searchParams.set('pws', '0');
     if (settings.languageRestrict && settings.languageCode) {
-      url.searchParams.set('lr', `lang_${settings.languageCode}`);
+      url.searchParams.set('lr', getGoogleLrCode(settings.languageCode));
+    } else {
+      url.searchParams.delete('lr');
     }
+
     if (settings.uule) {
       url.searchParams.set('uule', settings.uule);
+    } else {
+      url.searchParams.delete('uule'); // Explicit deletion if cleared
     }
+  } else {
+    // SW-02: Explicitly strip all spoofed parameters when disabled
+    ['gl', 'hl', 'lr', 'pws', 'uule'].forEach(param => url.searchParams.delete(param));
   }
 
   await chrome.tabs.update(activeTab.id, { url: url.toString() });

@@ -96,11 +96,11 @@
       <div class="form-group">
         <label for="countrySearch">
           <span>Search Region / Country (gl)</span>
-          <span class="badge-count" id="countryCount">240+</span>
+          <span class="badge-count" id="countryCount">--</span>
         </label>
         <div class="custom-select-container">
-          <input type="text" id="countrySearch" class="search-input" placeholder="Search country (e.g. United States, Germany, Pakistan)..." autocomplete="off">
-          <div class="dropdown-list" id="countryDropdown"></div>
+          <input type="text" id="countrySearch" class="search-input" placeholder="Search country (e.g. United States, Germany, Pakistan)..." autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="countryDropdown">
+          <div class="dropdown-list" id="countryDropdown" role="listbox"></div>
         </div>
       </div>
 
@@ -108,11 +108,11 @@
       <div class="form-group">
         <label for="langSearch">
           <span>Search Interface Language (hl)</span>
-          <span class="badge-count" id="langCount">150+</span>
+          <span class="badge-count" id="langCount">--</span>
         </label>
         <div class="custom-select-container">
-          <input type="text" id="langSearch" class="search-input" placeholder="Search language (e.g. English, Urdu, Arabic, Spanish)..." autocomplete="off">
-          <div class="dropdown-list" id="langDropdown"></div>
+          <input type="text" id="langSearch" class="search-input" placeholder="Search language (e.g. English, Urdu, Arabic, Spanish)..." autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="langDropdown">
+          <div class="dropdown-list" id="langDropdown" role="listbox"></div>
         </div>
       </div>
 
@@ -144,16 +144,21 @@
         </select>
       </div>
 
-      <!-- Coordinates Row -->
+      <!-- Coordinates & Accuracy Row -->
       <div class="form-row">
         <div class="form-group half">
-          <label for="latInput">Latitude</label>
-          <input type="number" id="latInput" class="form-input" placeholder="40.7128" step="any">
+          <label for="latInput">Latitude (-90 to 90)</label>
+          <input type="number" id="latInput" class="form-input" placeholder="40.7128" step="any" min="-90" max="90">
         </div>
         <div class="form-group half">
-          <label for="lngInput">Longitude</label>
-          <input type="number" id="lngInput" class="form-input" placeholder="-74.0060" step="any">
+          <label for="lngInput">Longitude (-180 to 180)</label>
+          <input type="number" id="lngInput" class="form-input" placeholder="-74.0060" step="any" min="-180" max="180">
         </div>
+      </div>
+
+      <div class="form-group">
+        <label for="accInput">Accuracy (meters)</label>
+        <input type="number" id="accInput" class="form-input" placeholder="15" min="1" max="10000" value="15">
       </div>
 
       <!-- Canonical City Name for UULE -->
