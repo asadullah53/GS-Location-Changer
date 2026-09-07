@@ -239,10 +239,12 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     }
 
     const finalUrl = url.toString();
-    // Guard against infinite loop
-    if (needsUpdate && lastRewrittenUrls.get(tabId) !== finalUrl) {
+    // Guard against infinite loop and redundant rewrites
+    if (needsUpdate && currentUrl !== finalUrl && lastRewrittenUrls.get(tabId) !== finalUrl) {
       lastRewrittenUrls.set(tabId, finalUrl);
-      chrome.tabs.update(tabId, { url: finalUrl });
+      chrome.tabs.update(tabId, { url: finalUrl }).catch(() => {
+        // Tab navigation was superseded, redirected, or aborted — safe to ignore
+      });
     }
   } catch (err) {
     console.error('[GS Location Changer] Error syncing search URL:', err);
@@ -306,7 +308,11 @@ async function handleQuickSearch(query, settings) {
     searchUrl.searchParams.set('uule', settings.uule);
   }
 
-  await chrome.tabs.create({ url: searchUrl.toString() });
+  try {
+    await chrome.tabs.create({ url: searchUrl.toString() });
+  } catch (err) {
+    console.warn('[GS Location Changer] Tab creation aborted:', err);
+  }
 }
 
 // Reload or update currently active Google tab with latest parameters (SW-02)
@@ -351,6 +357,11 @@ async function reloadCurrentGoogleTab() {
     ['gl', 'hl', 'lr', 'pws', 'uule'].forEach(param => url.searchParams.delete(param));
   }
 
-  await chrome.tabs.update(activeTab.id, { url: url.toString() });
-  return { reloaded: true };
+  try {
+    await chrome.tabs.update(activeTab.id, { url: url.toString() });
+    return { reloaded: true };
+  } catch (err) {
+    // Navigation was aborted or tab closed
+    return { reloaded: false, error: err.message };
+  }
 }
