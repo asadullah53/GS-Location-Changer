@@ -313,9 +313,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     countryDropdown.innerHTML = '';
     activeHighlightIndex = -1;
     const q = (query || '').toLowerCase().trim();
-    const filtered = GOOGLE_COUNTRIES.filter(c => 
-      c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
-    );
+    
+    // If empty query, show all countries
+    const filtered = !q 
+      ? GOOGLE_COUNTRIES 
+      : GOOGLE_COUNTRIES.filter(c => 
+          c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
+        );
 
     if (filtered.length === 0) {
       const emptyItem = document.createElement('div');
@@ -326,14 +330,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    const maxItems = 40;
-    filtered.slice(0, maxItems).forEach((c, idx) => {
+    filtered.forEach((c, idx) => {
       const item = document.createElement('div');
       item.className = 'dropdown-item';
       item.setAttribute('role', 'option');
       if (c.code.toLowerCase() === (state.countryCode || '').toLowerCase()) {
         item.classList.add('selected');
         activeHighlightIndex = idx;
+        setTimeout(() => item.scrollIntoView({ block: 'nearest' }), 10);
       }
       
       const left = document.createElement('div');
@@ -367,34 +371,40 @@ document.addEventListener('DOMContentLoaded', async () => {
       countryDropdown.appendChild(item);
     });
 
-    // POP-09: Showing count hint
-    if (filtered.length > maxItems) {
-      const hint = document.createElement('div');
-      hint.className = 'dropdown-item dropdown-hint';
-      hint.style.fontSize = '10px';
-      hint.style.color = 'var(--text-muted)';
-      hint.style.cursor = 'default';
-      hint.textContent = `Showing 40 of ${filtered.length} — type more to refine`;
-      countryDropdown.appendChild(hint);
-    }
-
     countryDropdown.classList.add('show');
   }
 
-  countrySearch.addEventListener('focus', () => filterCountries(countrySearch.value));
+  function openCountryDropdown() {
+    countrySearch.select();
+    filterCountries(''); // Show full list of countries on click/focus
+  }
+
+  countrySearch.addEventListener('focus', openCountryDropdown);
+  countrySearch.addEventListener('click', openCountryDropdown);
   countrySearch.addEventListener('input', (e) => filterCountries(e.target.value));
   countrySearch.addEventListener('keydown', (e) => handleDropdownKeyboard(e, countryDropdown));
+  countrySearch.addEventListener('blur', () => {
+    setTimeout(() => {
+      const flag = getCountryFlag(state.countryCode);
+      const codeUpper = (state.countryCode || 'US').toUpperCase();
+      countrySearch.value = `${flag} ${state.countryName} (${codeUpper})`;
+    }, 200);
+  });
 
   // Language Dropdown Filter
   function filterLanguages(query) {
     langDropdown.innerHTML = '';
     activeHighlightIndex = -1;
     const q = (query || '').toLowerCase().trim();
-    const filtered = GOOGLE_LANGUAGES.filter(l => 
-      l.name.toLowerCase().includes(q) || 
-      l.code.toLowerCase().includes(q) || 
-      l.nativeName.toLowerCase().includes(q)
-    );
+
+    // If empty query, show all languages
+    const filtered = !q
+      ? GOOGLE_LANGUAGES
+      : GOOGLE_LANGUAGES.filter(l => 
+          l.name.toLowerCase().includes(q) || 
+          l.code.toLowerCase().includes(q) || 
+          l.nativeName.toLowerCase().includes(q)
+        );
 
     if (filtered.length === 0) {
       const emptyItem = document.createElement('div');
@@ -405,14 +415,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    const maxItems = 40;
-    filtered.slice(0, maxItems).forEach((l, idx) => {
+    filtered.forEach((l, idx) => {
       const item = document.createElement('div');
       item.className = 'dropdown-item';
       item.setAttribute('role', 'option');
       if (l.code.toLowerCase() === (state.languageCode || '').toLowerCase()) {
         item.classList.add('selected');
         activeHighlightIndex = idx;
+        setTimeout(() => item.scrollIntoView({ block: 'nearest' }), 10);
       }
       
       const left = document.createElement('div');
@@ -441,22 +451,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       langDropdown.appendChild(item);
     });
 
-    if (filtered.length > maxItems) {
-      const hint = document.createElement('div');
-      hint.className = 'dropdown-item dropdown-hint';
-      hint.style.fontSize = '10px';
-      hint.style.color = 'var(--text-muted)';
-      hint.style.cursor = 'default';
-      hint.textContent = `Showing 40 of ${filtered.length} — type more to refine`;
-      langDropdown.appendChild(hint);
-    }
-
     langDropdown.classList.add('show');
   }
 
-  langSearch.addEventListener('focus', () => filterLanguages(langSearch.value));
+  function openLangDropdown() {
+    langSearch.select();
+    filterLanguages(''); // Show full list of languages on click/focus
+  }
+
+  langSearch.addEventListener('focus', openLangDropdown);
+  langSearch.addEventListener('click', openLangDropdown);
   langSearch.addEventListener('input', (e) => filterLanguages(e.target.value));
   langSearch.addEventListener('keydown', (e) => handleDropdownKeyboard(e, langDropdown));
+  langSearch.addEventListener('blur', () => {
+    setTimeout(() => {
+      langSearch.value = `${state.languageName} (${state.languageCode})`;
+    }, 200);
+  });
 
   // Close dropdowns on outside click
   document.addEventListener('click', (e) => {
