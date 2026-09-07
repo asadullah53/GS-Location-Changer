@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GS Location Changer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+            <path d="M2 12h20"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>GS Location Changer</h1>
+          <span class="brand-subtitle">Google SERP & Geo Control</span>
+        </div>
+      </div>
+
+      <div class="header-toggle">
+        <label class="switch" title="Toggle Google Location Spoofing">
+          <input type="checkbox" id="masterToggle" checked>
+          <span class="slider round"></span>
+        </label>
+        <span id="statusBadge" class="status-badge active">ACTIVE</span>
+      </div>
+    </header>
+
+    <!-- Active Status Card -->
+    <div class="status-card" id="statusCard">
+      <div class="status-header">
+        <div class="status-title-row">
+          <span class="status-flag" id="activeFlag">🇺🇸</span>
+          <div class="status-details">
+            <div class="status-country" id="activeCountryName">United States</div>
+            <div class="status-meta">
+              <span class="meta-tag" id="activeLanguageTag">🌐 English (en)</span>
+              <span class="meta-tag" id="activeGeoTag">📍 40.7128, -74.0060</span>
+            </div>
+          </div>
+        </div>
+        <button id="quickReloadBtn" class="icon-btn" title="Reload active Google tab with current settings">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="status-uule-row" id="uuleRow">
+        <span class="uule-label">UULE:</span>
+        <span class="uule-value" id="activeUuleText">New York, NY, USA (Active)</span>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="tab-quick">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" y1="12" x2="22" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+        Country & Lang
+      </button>
+      <button class="tab-btn" data-tab="tab-gps">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+        Local SEO / GPS
+      </button>
+      <button class="tab-btn" data-tab="tab-favorites">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+        Favorites
+      </button>
+      <button class="tab-btn" data-tab="tab-settings">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Settings
+      </button>
+    </nav>
+
+    <!-- TAB 1: QUICK SWITCH (Country & Language) -->
+    <section id="tab-quick" class="tab-content active">
+      <!-- Country Picker -->
+      <div class="form-group">
+        <label for="countrySearch">
+          <span>Search Region / Country (gl)</span>
+          <span class="badge-count" id="countryCount">240+</span>
+        </label>
+        <div class="custom-select-container">
+          <input type="text" id="countrySearch" class="search-input" placeholder="Search country (e.g. United States, Germany, Pakistan)..." autocomplete="off">
+          <div class="dropdown-list" id="countryDropdown"></div>
+        </div>
+      </div>
+
+      <!-- Language Picker -->
+      <div class="form-group">
+        <label for="langSearch">
+          <span>Search Interface Language (hl)</span>
+          <span class="badge-count" id="langCount">150+</span>
+        </label>
+        <div class="custom-select-container">
+          <input type="text" id="langSearch" class="search-input" placeholder="Search language (e.g. English, Urdu, Arabic, Spanish)..." autocomplete="off">
+          <div class="dropdown-list" id="langDropdown"></div>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="action-buttons">
+        <button id="applyQuickBtn" class="btn btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Apply Location & Language
+        </button>
+        <button id="saveCurrentAsFavBtn" class="btn btn-secondary" title="Bookmark current combination as favorite">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          Save to Favorites
+        </button>
+      </div>
+    </section>
+
+    <!-- TAB 2: LOCAL SEO & GPS (Coordinates & UULE) -->
+    <section id="tab-gps" class="tab-content">
+      <div class="banner-tip">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>Overrides HTML5 Geolocation and injects Google canonical UULE for exact Local SERPs.</span>
+      </div>
+
+      <!-- Preset Quick Cities -->
+      <div class="form-group">
+        <label for="cityPresetSelect">Preset Local SEO Cities</label>
+        <select id="cityPresetSelect" class="form-select">
+          <option value="">-- Choose a city preset or enter custom below --</option>
+        </select>
+      </div>
+
+      <!-- Coordinates Row -->
+      <div class="form-row">
+        <div class="form-group half">
+          <label for="latInput">Latitude</label>
+          <input type="number" id="latInput" class="form-input" placeholder="40.7128" step="any">
+        </div>
+        <div class="form-group half">
+          <label for="lngInput">Longitude</label>
+          <input type="number" id="lngInput" class="form-input" placeholder="-74.0060" step="any">
+        </div>
+      </div>
+
+      <!-- Canonical City Name for UULE -->
+      <div class="form-group">
+        <label for="canonicalCityInput">
+          <span>Canonical Location (City, State, Country)</span>
+        </label>
+        <div class="input-with-button">
+          <input type="text" id="canonicalCityInput" class="form-input" placeholder="e.g. New York, New York, United States">
+          <button id="generateUuleBtn" class="btn btn-compact" title="Generate canonical Google UULE parameter">
+            Generate UULE
+          </button>
+        </div>
+      </div>
+
+      <!-- Resulting UULE Preview -->
+      <div class="form-group">
+        <label for="uuleDisplay">Generated Google UULE String</label>
+        <input type="text" id="uuleDisplay" class="form-input code-input" readonly placeholder="w+CAIQICI...">
+      </div>
+
+      <div class="action-buttons">
+        <button id="applyGpsBtn" class="btn btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Apply Coordinates & UULE
+        </button>
+        <button id="clearGpsBtn" class="btn btn-secondary" title="Clear coordinates and reset to country-level">
+          Clear GPS
+        </button>
+      </div>
+    </section>
+
+    <!-- TAB 3: FAVORITES -->
+    <section id="tab-favorites" class="tab-content">
+      <div class="favorites-header">
+        <span class="favorites-count-label">Saved Favorites (<span id="favCount">0</span>)</span>
+        <button id="addNewFavToggleBtn" class="btn btn-compact btn-emerald">
+          + Add Current
+        </button>
+      </div>
+
+      <!-- Add New Favorite Drawer -->
+      <div id="newFavForm" class="new-fav-form hidden">
+        <div class="form-group">
+          <label for="favCustomName">Favorite Name</label>
+          <input type="text" id="favCustomName" class="form-input" placeholder="e.g. New York Office SEO">
+        </div>
+        <div class="fav-form-actions">
+          <button id="confirmSaveFavBtn" class="btn btn-primary btn-sm">Save Preset</button>
+          <button id="cancelSaveFavBtn" class="btn btn-secondary btn-sm">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Favorites List Container -->
+      <div class="favorites-list" id="favoritesList">
+        <!-- Dynamically rendered favorite cards -->
+      </div>
+    </section>
+
+    <!-- TAB 4: SETTINGS & TOOLS -->
+    <section id="tab-settings" class="tab-content">
+      <div class="settings-list">
+        <!-- Setting 1: Auto-Apply -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-title">Auto-Apply to Google Searches</span>
+            <span class="setting-desc">Automatically synchronize gl, hl, and uule when searching from Chrome's URL bar.</span>
+          </div>
+          <label class="switch sm">
+            <input type="checkbox" id="autoApplyToggle" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+
+        <!-- Setting 2: Non-Personalized Search -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-title">Non-Personalized Search (pws=0)</span>
+            <span class="setting-desc">Strip personalized search history for unbiased SEO SERP analysis.</span>
+          </div>
+          <label class="switch sm">
+            <input type="checkbox" id="pwsToggle" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+
+        <!-- Setting 3: Language Restrict -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-title">Strict Language Restrict (lr)</span>
+            <span class="setting-desc">Filter search results strictly to selected language pages only.</span>
+          </div>
+          <label class="switch sm">
+            <input type="checkbox" id="lrToggle">
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-tools">
+        <label class="section-subheading">Data Management</label>
+        <div class="tools-row">
+          <button id="exportFavsBtn" class="btn btn-secondary btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export Favorites
+          </button>
+          <label class="btn btn-secondary btn-sm btn-file-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            Import Favorites
+            <input type="file" id="importFavsInput" accept=".json" style="display: none;">
+          </label>
+        </div>
+        <button id="resetDefaultsBtn" class="btn btn-danger-outline btn-sm">
+          Reset All Settings to Default
+        </button>
+      </div>
+    </section>
+
+    <!-- Bottom Quick Search Launcher -->
+    <div class="quick-search-section">
+      <div class="search-box-wrapper">
+        <input type="text" id="quickSearchInput" placeholder="Search Google with current location & language..." autocomplete="off">
+        <button id="quickSearchSubmitBtn" title="Search Google Now">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast Feedback Notification -->
+    <div id="toast" class="toast hidden">Location updated successfully!</div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../data/countries.js"></script>
+  <script src="../data/languages.js"></script>
+  <script src="../data/presets.js"></script>
+  <script src="../utils/uule-generator.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
