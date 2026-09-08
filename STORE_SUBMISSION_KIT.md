@@ -120,11 +120,13 @@ When Google asks you these questions on the Privacy tab, select:
 
 Chrome Web Store requires the following images:
 
-| Asset | Dimensions | Status |
-|---|---|---|
-| **Store Icon** | 128 x 128 px | ✅ Ready at `icons/icon128.png` |
-| **Screenshots** | 1280 x 800 px (or 640 x 400 px) | Take 2-3 screenshots of the popup (Country tab, Local SEO tab, and User Guide) |
-| **Small Promo Tile** | 440 x 280 px | Optional but recommended (can be created in Canva/Figma with extension logo) |
+| Asset | Dimensions | Status | File Location |
+|---|---|---|---|
+| **Store Icon** | 128 x 128 px | ✅ Ready | `icons/icon128.png` |
+| **Screenshot 1 (Country & Lang)** | 1280 x 800 px | ✅ Ready | `store-assets/screenshot-1-country-and-language.png` |
+| **Screenshot 2 (Local SEO & GPS)** | 1280 x 800 px | ✅ Ready | `store-assets/screenshot-2-local-seo-and-gps.png` |
+| **Screenshot 3 (Smart Search)** | 1280 x 800 px | ✅ Ready | `store-assets/screenshot-3-country-dropdown-search.png` |
+| **Small Promo Tile** | 440 x 280 px | Optional | (Optional for featured placement) |
 
 ---
 
