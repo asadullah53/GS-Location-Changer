@@ -1,5 +1,9 @@
 # GS Location Changer - Google Search Location & Language Chrome Extension
 
+<p align="center">
+  <img src="store-assets/screenshot-1-country-and-language.png" alt="GS Location Changer Banner" width="100%" />
+</p>
+
 **GS Location Changer** is a modern, enterprise-grade Chrome Extension (Manifest V3) built for SEO professionals, digital marketers, international researchers, and privacy-conscious users. It allows you to effortlessly control Google Search's region (`gl`), interface language (`hl`), language restrict (`lr`), HTML5 Geolocation coordinates (`lat/lng`), and canonical Local SEO protobuf strings (`uule`).
 
 ---
@@ -73,15 +77,27 @@ GS Location Changer/
 
 ---
 
-## 🚀 How to Install in Google Chrome
+## 📦 How to Install
 
-1. Open **Google Chrome**.
-2. Go to `chrome://extensions` (type this in your address bar and press Enter).
-3. In the top right corner, toggle **Developer mode** to **ON**.
-4. Click the **Load unpacked** button in the top left corner.
-5. Select the extension directory:
-   `c:\xampp\htdocs\GS Location Changer Chrome Extension`
-6. Pin the extension to your toolbar.
+### Method 1: Chrome Web Store (Recommended)
+You can install the official version directly from the Chrome Web Store:
+> **[Install from Chrome Web Store](https://chromewebstore.google.com/detail/clgaahgffldbjhlbjdphnecifgellidj)** *(Currently under review by Google)*
+
+---
+
+### Method 2: Install from Source (Developer Mode)
+If you want to run or test the extension directly from the source code:
+
+1. **Clone or Download** this repository:
+   ```bash
+   git clone https://github.com/asadullah53/GS-Location-Changer.git
+   ```
+   *(Or download and extract the ZIP file from GitHub).*
+2. Open Google Chrome and visit `chrome://extensions` in your address bar.
+3. Enable **Developer mode** using the toggle in the top-right corner.
+4. Click the **Load unpacked** button in the top-left corner.
+5. Select the cloned/extracted **`GS-Location-Changer`** project directory.
+6. Pin **GS Location Changer** to your Chrome toolbar.
 
 ---
 
