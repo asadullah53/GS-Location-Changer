@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GS Location Changer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Instantly change Google Search location, language, coordinates, and canonical UULE with 1-click favorites.",
   "author": "GS Location Changer",
   "minimum_chrome_version": "111",
@@ -26,7 +26,8 @@
   },
   "permissions": [
     "storage",
-    "tabs"
+    "tabs",
+    "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": [
     "*://*.google.ad/*",

@@ -1,5 +1,5 @@
 # Chrome Web Store - Complete Submission Kit
-## Extension: GS Location Changer (v1.0.0)
+## Extension: GS Location Changer (v1.0.1)
 
 This document contains **everything** you need to publish **GS Location Changer** to the Chrome Web Store Developer Dashboard. All texts, descriptions, and permission justifications are pre-written and ready to copy-paste.
 
@@ -7,8 +7,8 @@ This document contains **everything** you need to publish **GS Location Changer*
 
 ## 📦 1. Upload Package (Zip File)
 
-- **File to Upload**: `dist\GS-Location-Changer-v1.0.0.zip`
-- **Location**: Inside your project folder (`c:\xampp\htdocs\GS Location Changer Chrome Extension\dist\GS-Location-Changer-v1.0.0.zip`)
+- **File to Upload**: `dist\GS-Location-Changer-v1.0.1.zip`
+- **Location**: Inside your project folder (`c:\xampp\htdocs\GS Location Changer Chrome Extension\dist\GS-Location-Changer-v1.0.1.zip`)
 - **Status**: Tested, verified, clean production build (contains manifest v3, icons, assets, zero junk).
 
 ---
@@ -96,6 +96,11 @@ The storage permission is required solely to persist the user's selected country
 The tabs permission is strictly used to check if the currently active browser tab is an active Google Search results page, allowing the extension to reload or navigate the tab with the user's requested localized search parameters (gl, hl, uule, pws).
 ```
 
+#### `declarativeNetRequestWithHostAccess` Permission:
+```text
+Used exclusively on Google Search domains to dynamically inject or update user-selected query parameters (gl, hl, lr, uule, pws) directly into Google Search requests before they leave the browser. This eliminates client-side redirect loops, ensures fast query delivery, and prevents Google from detecting double-navigation traffic as automated queries.
+```
+
 #### Host Permissions (`*://*.google.<tld>/*`):
 ```text
 Host permissions on Google domains are required to append search localization URL parameters (gl, hl, uule, pws) and inject the HTML5 geolocation mock script on Google Search pages so that local searches (e.g., "near me" or clicking "Use precise location") reflect the user's chosen coordinates.
@@ -133,9 +138,9 @@ Chrome Web Store requires the following images:
 ## 🚀 5. Step-by-Step Submission Instructions
 
 1. Log in to the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole).
-2. Click **+ New Item** (or "Add new item" button).
-3. Drag & drop or upload the ZIP file:
-   `c:\xampp\htdocs\GS Location Changer Chrome Extension\dist\GS-Location-Changer-v1.0.0.zip`
+2. Click on your existing published extension (**GS Location Changer**).
+3. In the left navigation, select **Package**, then click **Upload new package** (or drag & drop):
+   `c:\xampp\htdocs\GS Location Changer Chrome Extension\dist\GS-Location-Changer-v1.0.1.zip`
 4. In the **Store Listing** tab:
    - Paste the Title, Short Description, and Detailed Description from Section 2 above.
    - Upload `icons/icon128.png` as the Store Icon.

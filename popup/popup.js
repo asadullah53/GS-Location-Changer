@@ -110,6 +110,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     return c ? c.flag : '🌐';
   }
 
+  // True when a canonical name ("City, Region, Country") ends in the given country
+  function locationBelongsToCountry(canonicalName, countryName) {
+    if (!canonicalName || !countryName) return false;
+    const parts = canonicalName.split(',');
+    const last = parts[parts.length - 1].trim().toLowerCase();
+    return last === countryName.trim().toLowerCase();
+  }
+
   // Single Consolidated State Persist (POP-01)
   async function saveState(reloadTab = true) {
     // Validate coordinates (POP-05)
@@ -364,8 +372,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       item.addEventListener('click', () => {
         state.countryCode = c.code;
         state.countryName = c.name;
-        countrySearch.value = `${c.flag} ${c.name} (${c.code.toUpperCase()})`;
         countryDropdown.classList.remove('show');
+
+        // Keep gl, UULE and GPS pointing at the same country. A city from another
+        // country (e.g. New York while gl=pl) makes Google show both locations.
+        if (!locationBelongsToCountry(state.canonicalName, c.name)) {
+          state.canonicalName = c.name;
+          state.uule = encodeUULE(c.name);
+          state.latitude = null;
+          state.longitude = null;
+          cityPresetSelect.value = '';
+          renderStatus();
+          showToast(`Location set to ${c.name}. Pick a city in Local SEO / GPS if needed.`);
+        } else {
+          countrySearch.value = `${c.flag} ${c.name} (${c.code.toUpperCase()})`;
+        }
       });
 
       countryDropdown.appendChild(item);

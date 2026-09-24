@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1] - 2026-09-25
+
+### Improvements & Fixes
+- **declarativeNetRequest Query Rewrite**: Rewrites search URL parameters directly before requests leave the browser, eliminating duplicate requests and resolving Google 403 automated traffic blocks.
+- **Location & Country Sync**: Changing countries in the popup automatically updates canonical location, UULE, and GPS to prevent country-city parameter mismatches.
+- **Chrome Web Store Update**: Updated manifest permissions with `declarativeNetRequestWithHostAccess`.
+
 ## [1.0.0] - 2026-09-07
 
 ### Initial Release & Enterprise Audit Hardening

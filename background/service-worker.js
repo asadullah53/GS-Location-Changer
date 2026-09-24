@@ -176,78 +176,68 @@ function isGoogleSearchUrl(urlString) {
   }
 }
 
-// Prevent redirect loops (SW-01)
-const lastRewrittenUrls = new Map();
+// Auto-apply search parameters with declarativeNetRequest.
+// Chrome rewrites the URL *before* the request leaves the browser, so Google
+// receives exactly one request per search. The previous tabs.onUpdated +
+// tabs.update approach sent every search twice (original + rewritten), which
+// Google flags as automated traffic and answers with "403 ... /search".
+const SEARCH_PARAMS_RULE_ID = 1;
+const SEARCH_RULE_KEYS = [
+  'isEnabled',
+  'autoApply',
+  'countryCode',
+  'languageCode',
+  'uule',
+  'nonPersonalized',
+  'languageRestrict'
+];
 
-chrome.tabs.onRemoved.addListener((tabId) => {
-  lastRewrittenUrls.delete(tabId);
-});
+async function syncSearchParamsRule() {
+  const settings = await chrome.storage.local.get(SEARCH_RULE_KEYS);
 
-// Auto-sync Google Search URLs with user parameters
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (!changeInfo.status || changeInfo.status !== 'loading') return;
-  const currentUrl = tab.url;
-  if (!currentUrl || !isGoogleSearchUrl(currentUrl)) return;
+  const params = [];
+  if (settings.isEnabled !== false && settings.autoApply !== false) {
+    if (settings.countryCode) params.push({ key: 'gl', value: settings.countryCode.toLowerCase() });
+    if (settings.languageCode) params.push({ key: 'hl', value: settings.languageCode });
+    if (settings.languageRestrict && settings.languageCode) {
+      params.push({ key: 'lr', value: getGoogleLrCode(settings.languageCode) });
+    }
+    if (settings.nonPersonalized) params.push({ key: 'pws', value: '0' });
+    if (settings.uule) params.push({ key: 'uule', value: settings.uule });
+  }
 
-  const settings = await chrome.storage.local.get([
-    'isEnabled',
-    'autoApply',
-    'countryCode',
-    'languageCode',
-    'uule',
-    'nonPersonalized',
-    'languageRestrict'
-  ]);
-
-  if (!settings.isEnabled || !settings.autoApply) return;
+  const update = { removeRuleIds: [SEARCH_PARAMS_RULE_ID] };
+  if (params.length > 0) {
+    update.addRules = [{
+      id: SEARCH_PARAMS_RULE_ID,
+      priority: 1,
+      action: {
+        type: 'redirect',
+        redirect: { transform: { queryTransform: { addOrReplaceParams: params } } }
+      },
+      condition: {
+        // Only top-level Google Search result pages with a query (?q= / &q=)
+        regexFilter: '^https?://[^/]+/search\\?(.*&)?q=',
+        requestDomains: [...GOOGLE_DOMAINS_SET],
+        resourceTypes: ['main_frame']
+      }
+    }];
+  }
 
   try {
-    const url = new URL(currentUrl);
-    let needsUpdate = false;
-
-    // 1. Country 'gl'
-    if (settings.countryCode && url.searchParams.get('gl') !== settings.countryCode.toLowerCase()) {
-      url.searchParams.set('gl', settings.countryCode.toLowerCase());
-      needsUpdate = true;
-    }
-
-    // 2. Language 'hl'
-    if (settings.languageCode && url.searchParams.get('hl') !== settings.languageCode) {
-      url.searchParams.set('hl', settings.languageCode);
-      needsUpdate = true;
-    }
-
-    // 3. Language restrict 'lr' (SW-06)
-    if (settings.languageRestrict && settings.languageCode) {
-      const lrVal = getGoogleLrCode(settings.languageCode);
-      if (url.searchParams.get('lr') !== lrVal) {
-        url.searchParams.set('lr', lrVal);
-        needsUpdate = true;
-      }
-    }
-
-    // 4. Non-personalized search 'pws=0'
-    if (settings.nonPersonalized && url.searchParams.get('pws') !== '0') {
-      url.searchParams.set('pws', '0');
-      needsUpdate = true;
-    }
-
-    // 5. UULE Local SEO parameter
-    if (settings.uule && url.searchParams.get('uule') !== settings.uule) {
-      url.searchParams.set('uule', settings.uule);
-      needsUpdate = true;
-    }
-
-    const finalUrl = url.toString();
-    // Guard against infinite loop and redundant rewrites
-    if (needsUpdate && currentUrl !== finalUrl && lastRewrittenUrls.get(tabId) !== finalUrl) {
-      lastRewrittenUrls.set(tabId, finalUrl);
-      chrome.tabs.update(tabId, { url: finalUrl }).catch(() => {
-        // Tab navigation was superseded, redirected, or aborted — safe to ignore
-      });
-    }
+    await chrome.declarativeNetRequest.updateDynamicRules(update);
   } catch (err) {
-    console.error('[GS Location Changer] Error syncing search URL:', err);
+    console.error('[GS Location Changer] Failed to update search rule:', err);
+  }
+}
+
+chrome.runtime.onInstalled.addListener(() => { syncSearchParamsRule(); });
+chrome.runtime.onStartup.addListener(() => { syncSearchParamsRule(); });
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'local') return;
+  if (SEARCH_RULE_KEYS.some((key) => key in changes)) {
+    syncSearchParamsRule();
   }
 });
 
