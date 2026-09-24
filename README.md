@@ -81,7 +81,7 @@ GS Location Changer/
 
 ### Method 1: Chrome Web Store (Recommended)
 You can install the official version directly from the Chrome Web Store:
-> **[Install from Chrome Web Store](https://chromewebstore.google.com/detail/clgaahgffldbjhlbjdphnecifgellidj)** *(Currently under review by Google)*
+> **[Install from Chrome Web Store](https://chromewebstore.google.com/detail/clgaahgffldbjhlbjdphnecifgellidj)** 
 
 ---
 
