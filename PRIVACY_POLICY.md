@@ -21,6 +21,7 @@
 ## 3. Extension Permissions Usage
 - **`storage`**: Used solely to persist your chosen location, language, and favorite presets locally within your browser.
 - **`tabs`**: Used strictly to detect when an active tab is a Google Search results page so that parameters (`gl`, `hl`, `uule`, `pws`) can be updated, and to refresh the tab upon your explicit request.
+- **`cookies`**: Used only to delete Google's `UULE` device-location cookie on Google domains when it conflicts with the location you selected. Cookie values are never stored or transmitted.
 - **Host Permissions (`*://*.google.<tld>/*`)**: Used exclusively to apply your preferred region and language parameters to Google Search domains and mock client-side HTML5 Geolocation when requested by Google Search.
 
 ---

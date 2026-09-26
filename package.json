@@ -1,6 +1,6 @@
 {
   "name": "gs-location-changer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Chrome extension to control Google Search location, language, and coordinates.",
   "scripts": {
     "build": "node scripts/build.js",

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2] - 2026-09-26
+
+### Fixes
+- **Stale Device Location Override**: Google caches a previously shared position in its `UULE` cookie and shows it as "From your device" (e.g. "10007, New York" while the selected country is Netherlands), overriding the `gl`/`uule` parameters. The extension now removes this cookie whenever it doesn't match the configured GPS coordinates, including before reloading the active search tab.
+- **Chrome Web Store Update**: Added the `cookies` permission.
+
 ## [1.0.1] - 2026-09-25
 
 ### Improvements & Fixes

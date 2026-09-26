@@ -1,5 +1,5 @@
 # Chrome Web Store - Complete Submission Kit
-## Extension: GS Location Changer (v1.0.1)
+## Extension: GS Location Changer (v1.0.2)
 
 This document contains **everything** you need to publish **GS Location Changer** to the Chrome Web Store Developer Dashboard. All texts, descriptions, and permission justifications are pre-written and ready to copy-paste.
 
@@ -7,8 +7,8 @@ This document contains **everything** you need to publish **GS Location Changer*
 
 ## 📦 1. Upload Package (Zip File)
 
-- **File to Upload**: `dist\GS-Location-Changer-v1.0.1.zip`
-- **Location**: Inside your project folder (`c:\xampp\htdocs\GS Location Changer Chrome Extension\dist\GS-Location-Changer-v1.0.1.zip`)
+- **File to Upload**: `dist\GS-Location-Changer-v1.0.2.zip`
+- **Location**: Inside your project folder (`c:\xampp\htdocs\GS Location Changer Chrome Extension\dist\GS-Location-Changer-v1.0.2.zip`)
 - **Status**: Tested, verified, clean production build (contains manifest v3, icons, assets, zero junk).
 
 ---
@@ -101,6 +101,11 @@ The tabs permission is strictly used to check if the currently active browser ta
 Used exclusively on Google Search domains to dynamically inject or update user-selected query parameters (gl, hl, lr, uule, pws) directly into Google Search requests before they leave the browser. This eliminates client-side redirect loops, ensures fast query delivery, and prevents Google from detecting double-navigation traffic as automated queries.
 ```
 
+#### `cookies` Permission:
+```text
+Used only to remove Google's "UULE" device-location cookie on Google domains when it no longer matches the location the user selected in the extension. Google caches a previously shared position in this cookie and shows results for it ("From your device"), overriding the chosen country or city. No cookie values are stored, read for any other purpose, or transmitted anywhere.
+```
+
 #### Host Permissions (`*://*.google.<tld>/*`):
 ```text
 Host permissions on Google domains are required to append search localization URL parameters (gl, hl, uule, pws) and inject the HTML5 geolocation mock script on Google Search pages so that local searches (e.g., "near me" or clicking "Use precise location") reflect the user's chosen coordinates.
@@ -140,7 +145,7 @@ Chrome Web Store requires the following images:
 1. Log in to the [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole).
 2. Click on your existing published extension (**GS Location Changer**).
 3. In the left navigation, select **Package**, then click **Upload new package** (or drag & drop):
-   `c:\xampp\htdocs\GS Location Changer Chrome Extension\dist\GS-Location-Changer-v1.0.1.zip`
+   `c:\xampp\htdocs\GS Location Changer Chrome Extension\dist\GS-Location-Changer-v1.0.2.zip`
 4. In the **Store Listing** tab:
    - Paste the Title, Short Description, and Detailed Description from Section 2 above.
    - Upload `icons/icon128.png` as the Store Icon.
@@ -148,7 +153,7 @@ Chrome Web Store requires the following images:
    - Select Category: **Productivity**.
 5. In the **Privacy** tab:
    - Paste the Single Purpose description from Section 3 above.
-   - Paste the justification texts for `storage`, `tabs`, and Host permissions.
+   - Paste the justification texts for `storage`, `tabs`, `declarativeNetRequestWithHostAccess`, `cookies`, and Host permissions.
    - Check all certification boxes confirming you do not sell or collect data.
    - Paste your Privacy Policy URL.
 6. In the **Distribution** tab:

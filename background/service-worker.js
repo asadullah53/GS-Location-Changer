@@ -241,6 +241,94 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   }
 });
 
+// Stale device-location cookie cleanup.
+// After a page gets a position from navigator.geolocation, Google caches it in a
+// "UULE" cookie (a+cm9sZ... = base64 text proto with latitude_e7/longitude_e7).
+// Google then shows that position as "From your device" and ranks results for it,
+// which overrides the uule/gl URL params (e.g. gl=nl but results for New York).
+// Remove the cookie whenever it doesn't match the GPS coordinates configured here.
+const DEVICE_LOCATION_COOKIE = 'UULE';
+const COOKIE_RULE_KEYS = ['isEnabled', 'latitude', 'longitude'];
+const COORD_MATCH_TOLERANCE = 0.01; // ~1 km
+
+function parseDeviceLocationCookie(value) {
+  try {
+    let raw = decodeURIComponent(value || '').trim();
+    if (!raw.startsWith('a+') && !raw.startsWith('a ')) return null;
+    raw = raw.slice(2).replace(/-/g, '+').replace(/_/g, '/');
+    const text = atob(raw);
+    const lat = text.match(/latitude_e7:\s*(-?\d+)/);
+    const lng = text.match(/longitude_e7:\s*(-?\d+)/);
+    if (!lat || !lng) return null;
+    return { latitude: Number(lat[1]) / 1e7, longitude: Number(lng[1]) / 1e7 };
+  } catch {
+    return null;
+  }
+}
+
+function isGoogleCookieDomain(domain) {
+  const host = (domain || '').replace(/^\./, '').toLowerCase();
+  for (const d of GOOGLE_DOMAINS_SET) {
+    if (host === d || host.endsWith('.' + d)) return true;
+  }
+  return false;
+}
+
+function shouldRemoveDeviceCookie(cookie, settings) {
+  if (cookie.name !== DEVICE_LOCATION_COOKIE || !isGoogleCookieDomain(cookie.domain)) return false;
+  if (settings.isEnabled === false) return false;
+
+  const lat = parseFloat(settings.latitude);
+  const lng = parseFloat(settings.longitude);
+  if (isNaN(lat) || isNaN(lng)) return true; // Country-level: no device location at all
+
+  const cached = parseDeviceLocationCookie(cookie.value);
+  if (!cached) return true;
+  return Math.abs(cached.latitude - lat) > COORD_MATCH_TOLERANCE ||
+    Math.abs(cached.longitude - lng) > COORD_MATCH_TOLERANCE;
+}
+
+async function removeCookie(cookie) {
+  const host = cookie.domain.replace(/^\./, '');
+  try {
+    await chrome.cookies.remove({
+      url: `https://${host}${cookie.path || '/'}`,
+      name: cookie.name,
+      storeId: cookie.storeId
+    });
+  } catch (err) {
+    console.warn('[GS Location Changer] Failed to remove device location cookie:', err);
+  }
+}
+
+async function purgeStaleDeviceLocationCookies() {
+  const settings = await chrome.storage.local.get(COOKIE_RULE_KEYS);
+  if (settings.isEnabled === false) return;
+  const stores = await chrome.cookies.getAllCookieStores();
+  for (const store of stores) {
+    const cookies = await chrome.cookies.getAll({ name: DEVICE_LOCATION_COOKIE, storeId: store.id });
+    for (const cookie of cookies) {
+      if (shouldRemoveDeviceCookie(cookie, settings)) await removeCookie(cookie);
+    }
+  }
+}
+
+chrome.cookies.onChanged.addListener(async ({ removed, cookie }) => {
+  if (removed || cookie.name !== DEVICE_LOCATION_COOKIE) return;
+  const settings = await chrome.storage.local.get(COOKIE_RULE_KEYS);
+  if (shouldRemoveDeviceCookie(cookie, settings)) await removeCookie(cookie);
+});
+
+chrome.runtime.onInstalled.addListener(() => { purgeStaleDeviceLocationCookies(); });
+chrome.runtime.onStartup.addListener(() => { purgeStaleDeviceLocationCookies(); });
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'local') return;
+  if (COOKIE_RULE_KEYS.some((key) => key in changes)) {
+    purgeStaleDeviceLocationCookies();
+  }
+});
+
 // Handle incoming messages from popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'QUICK_SEARCH') {
@@ -325,6 +413,9 @@ async function reloadCurrentGoogleTab() {
   ]);
 
   const url = new URL(activeTab.url);
+
+  // Drop any cached device location before the reload request carries it
+  await purgeStaleDeviceLocationCookies();
 
   if (settings.isEnabled) {
     // Apply parameters
